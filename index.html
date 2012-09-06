@@ -9,36 +9,48 @@
         ctx = canvas.getContext("2d");
         
         
-        BOTTOM_LEFT_X = 100;
-        BOTTOM_LEFT_Y = 1800;
-        SPACING       = 12;
-        DOT_RADIUS    = 4;
-        SANGLE        = 0;
-        EANGLE        = 2 * Math.PI;
-        CLOCKWISE     = false;  
+        BOTTOM_LEFT_X  = 20;
+        BOTTOM_LEFT_Y  = 1800;
+        SPACING        = 15;
+        BRANCH_SPACING = 25;
+        DOT_RADIUS     = 5;
+        SANGLE         = 0;
+        EANGLE         = 2 * Math.PI;
+        CLOCKWISE      = false;  
         
         function clear_whole_canvas() {
-          ctx.clearRect(0, 0, 480, 1800);
+          ctx.clearRect(-200, 0, 1800, 1800);
         }
+        
+        ctx.translate(900, 0);
+        ctx.rotate(0);
         
         function update_clock(){
           clear_whole_canvas();
           var current_time = new Date();
 
           var current_hours = current_time.getHours();
+          if(current_hours == 0) {
+            current_hours == 24;
+          }
           var current_minutes = current_time.getMinutes();
           var current_seconds = current_time.getSeconds();
           
-          // var current_hours = 24;
-          // var current_minutes = 59;
-          // var current_seconds = 59;
+          // var current_hours = 12;
+          // var current_minutes = 1;
+          // var current_seconds = 5;
 
           draw_time_for(1, 24, current_hours, 0);
-          draw_time_for(2, 60, current_minutes, current_hours);
-          draw_time_for(3, 60, current_seconds, current_minutes + current_hours);
+          draw_time_for(2, 59, current_minutes, current_hours);
+          draw_time_for(3, 59, current_seconds, current_minutes + current_hours);
           
           add_current_time_label(4, current_minutes + current_hours + current_seconds + 1);
           add_all_other_labels(current_hours, current_minutes, current_seconds);
+          
+          // translate context to center of canvas
+          // ctx.translate(0, 1800);
+          // // rotate 45 degrees clockwise
+          // ctx.rotate(Math.PI / 2);
         }
         
         function add_current_time_label(column, row) {
@@ -48,7 +60,7 @@
           ctx.font = "12pt Calibri";
           ctx.textBaseline = 'middle';
           ctx.textAlign = "left";
-          ctx.fillText("current_time", coordinates[0], coordinates[1]);
+          ctx.fillText("current_time", coordinates[0]-15, coordinates[1]);
           ctx.fillStyle = "Black";
         }
         
@@ -59,21 +71,21 @@
           ctx.font = "12pt Calibri";
           ctx.textBaseline = "middle";
           ctx.textAlign = "right";
-          ctx.fillText("hours", coordinates[0]-5, coordinates[1]);
+          ctx.fillText("hours", coordinates[0]+15, coordinates[1]);
           
-          var coordinates = position(1, current_hours + 60 +1);
-          
-          ctx.font = "12pt Calibri";
-          ctx.textBaseline = "middle";
-          ctx.textAlign = "right";
-          ctx.fillText("minutes", coordinates[0]-5, coordinates[1]);
-          
-          var coordinates = position(2, current_hours + current_minutes + 60 + 1);
+          var coordinates = position(1, current_hours + 60);
           
           ctx.font = "12pt Calibri";
           ctx.textBaseline = "middle";
           ctx.textAlign = "right";
-          ctx.fillText("seconds", coordinates[0]-5, coordinates[1]);
+          ctx.fillText("minutes", coordinates[0]+15, coordinates[1]);
+          
+          var coordinates = position(2, current_hours + current_minutes + 60);
+          
+          ctx.font = "12pt Calibri";
+          ctx.textBaseline = "middle";
+          ctx.textAlign = "right";
+          ctx.fillText("seconds", coordinates[0]+15, coordinates[1]);
           
           
           
@@ -101,12 +113,19 @@
             
             var coordinates = position(column, (i+starting_row));
             
-            ctx.fillStyle = "Black";
+            if((column == 1 && i==12) || (column > 1 && i%10 == 0)) {
+               ctx.fillStyle = "Red";
+            }
+            else {
+              ctx.fillStyle = "Black";
+            }
+           
             ctx.beginPath();
             ctx.arc(coordinates[0], coordinates[1], DOT_RADIUS, SANGLE, EANGLE, CLOCKWISE);
             ctx.closePath();
             ctx.fill();
             ctx.globalAlpha = 1;
+            
             
             if(i == 1) {
               var is_bottom = true;
@@ -114,16 +133,13 @@
             else {
               var is_bottom = false;
             }
-            
-            if(column != 0 || (column == 0 && i != 0)) {
-              draw_line_to_parent(column, (i+starting_row), is_bottom);
-            }
+            draw_line_to_parent(column, (i+starting_row), is_bottom);
           }
         }
         
         function position(column, row) {
           var coordinates = [];
-          var x = BOTTOM_LEFT_X + (column*SPACING);
+          var x = BOTTOM_LEFT_X + (column*BRANCH_SPACING);
           var y = BOTTOM_LEFT_Y - (row*SPACING);
           
           coordinates = [x, y];
@@ -154,6 +170,12 @@
           ctx.strokeStyle = "Black";
         }
         
+        // translate context to center of canvas
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        
+        // rotate 45 degrees clockwise
+        ctx.rotate(90*Math.PI/180);
+        
         setInterval(function(){update_clock()}, 1000);
 
         
@@ -163,6 +185,6 @@
   <body>
     <h1>Git Inspired Clock</h1>
     
-    <canvas id="canvas" width="480" height="1800"></canvas>
+    <canvas id="canvas" width="1800" height="400"></canvas>
   </body>
 </html>
