@@ -8,25 +8,80 @@
         canvas = document.getElementById('canvas');
         ctx = canvas.getContext("2d");
         
+        // // hard_coded
+        // bottom_left_x  = 20;
+        // bottom_left_y  = 2500;
+        // spacing        = 15;
+        // branch_spacing = 25;
+        // dot_radius     = 5;
         
-        BOTTOM_LEFT_X  = 20;
-        BOTTOM_LEFT_Y  = 1800;
-        SPACING        = 15;
-        BRANCH_SPACING = 25;
-        DOT_RADIUS     = 5;
+        // percentages
+        bottom_left_x  = .05;
+        bottom_left_y  = 1;
+        spacing        = .006;
+        branch_spacing = .01;
+        dot_radius     = .002;
+        
+        horizontal = false;
+        
         SANGLE         = 0;
         EANGLE         = 2 * Math.PI;
         CLOCKWISE      = false;  
         
         function clear_whole_canvas() {
-          ctx.clearRect(-200, 0, 1800, 1800);
+          ctx.clearRect(0, 0, 2500, 2500);
         }
         
-        ctx.translate(900, 0);
-        ctx.rotate(0);
+        function resize_and_rotate() {
+          canvas.height =  window.innerHeight;
+          canvas.width = window.innerWidth;
+          
+          if(window.innerWidth > window.innerHeight) {
+            // If it is wider than it is tall, display it horizontally
+            max_width_or_height = window.innerWidth;
+            
+            if(horizontal == false) {
+              ctx.translate(window.innerWidth, 0);
+              ctx.rotate(90*Math.PI/180);
+            }
+            horizontal = true;
+          }
+          else {
+            max_width_or_height = window.innerHeight;
+            
+            // if(horizontal == true) {
+            //   ctx.translate(window.innerWidth, 0);
+            //   ctx.rotate(-90*Math.PI/180);
+            // }
+            horizontal = false;
+          }
+        }
+        resize_and_rotate();
+        
+        function adjusted_bottom_left_x() {
+          return (bottom_left_x * max_width_or_height);
+        }
+        
+        function adjusted_bottom_left_y() {
+          return (bottom_left_y * max_width_or_height);
+        }
+        
+        function adjusted_spacing() {
+          return (spacing * max_width_or_height);
+        }
+        
+        function adjusted_branch_spacing() {
+          return (branch_spacing * max_width_or_height);
+        }
+        
+        function adjusted_dot_radius() {
+          return (dot_radius * max_width_or_height);
+        }
         
         function update_clock(){
           clear_whole_canvas();
+          // resize_and_rotate();
+          
           var current_time = new Date();
 
           var current_hours = current_time.getHours();
@@ -36,9 +91,9 @@
           var current_minutes = current_time.getMinutes();
           var current_seconds = current_time.getSeconds();
           
-          // var current_hours = 12;
-          // var current_minutes = 1;
-          // var current_seconds = 5;
+          // var current_hours = 24;
+          // var current_minutes = 59;
+          // var current_seconds = 59;
 
           draw_time_for(1, 24, current_hours, 0);
           draw_time_for(2, 59, current_minutes, current_hours);
@@ -46,11 +101,6 @@
           
           add_current_time_label(4, current_minutes + current_hours + current_seconds + 1);
           add_all_other_labels(current_hours, current_minutes, current_seconds);
-          
-          // translate context to center of canvas
-          // ctx.translate(0, 1800);
-          // // rotate 45 degrees clockwise
-          // ctx.rotate(Math.PI / 2);
         }
         
         function add_current_time_label(column, row) {
@@ -60,7 +110,7 @@
           ctx.font = "12pt Calibri";
           ctx.textBaseline = 'middle';
           ctx.textAlign = "left";
-          ctx.fillText("current_time", coordinates[0]-15, coordinates[1]);
+          ctx.fillText("current_time", coordinates[0]-(.006 * max_width_or_height), coordinates[1]);
           ctx.fillStyle = "Black";
         }
         
@@ -71,23 +121,21 @@
           ctx.font = "12pt Calibri";
           ctx.textBaseline = "middle";
           ctx.textAlign = "right";
-          ctx.fillText("hours", coordinates[0]+15, coordinates[1]);
+          ctx.fillText("hours", coordinates[0]+(.006 * max_width_or_height), coordinates[1]);
           
           var coordinates = position(1, current_hours + 60);
           
           ctx.font = "12pt Calibri";
           ctx.textBaseline = "middle";
           ctx.textAlign = "right";
-          ctx.fillText("minutes", coordinates[0]+15, coordinates[1]);
+          ctx.fillText("minutes", coordinates[0]+(.006 * max_width_or_height), coordinates[1]);
           
           var coordinates = position(2, current_hours + current_minutes + 60);
           
           ctx.font = "12pt Calibri";
           ctx.textBaseline = "middle";
           ctx.textAlign = "right";
-          ctx.fillText("seconds", coordinates[0]+15, coordinates[1]);
-          
-          
+          ctx.fillText("seconds", coordinates[0]+(.006 * max_width_or_height), coordinates[1]);
           
           ctx.fillStyle = "Black";
         }
@@ -121,7 +169,7 @@
             }
            
             ctx.beginPath();
-            ctx.arc(coordinates[0], coordinates[1], DOT_RADIUS, SANGLE, EANGLE, CLOCKWISE);
+            ctx.arc(coordinates[0], coordinates[1], adjusted_dot_radius(), SANGLE, EANGLE, CLOCKWISE);
             ctx.closePath();
             ctx.fill();
             ctx.globalAlpha = 1;
@@ -139,8 +187,8 @@
         
         function position(column, row) {
           var coordinates = [];
-          var x = BOTTOM_LEFT_X + (column*BRANCH_SPACING);
-          var y = BOTTOM_LEFT_Y - (row*SPACING);
+          var x = adjusted_bottom_left_x() + (column*adjusted_branch_spacing());
+          var y = adjusted_bottom_left_y() - (row*adjusted_spacing());
           
           coordinates = [x, y];
           
@@ -170,21 +218,13 @@
           ctx.strokeStyle = "Black";
         }
         
-        // translate context to center of canvas
-        ctx.translate(canvas.width / 2, canvas.height / 2);
-        
-        // rotate 45 degrees clockwise
-        ctx.rotate(90*Math.PI/180);
-        
         setInterval(function(){update_clock()}, 1000);
-
-        
       }
     </script>
   </head>
   <body>
     <h1>Git Inspired Clock</h1>
     
-    <canvas id="canvas" width="1800" height="400"></canvas>
+    <canvas id="canvas" width="2500" height="400"></canvas>
   </body>
 </html>
